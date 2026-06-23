@@ -1,0 +1,11 @@
+node_modules
+dist
+.env
+.DS_Store
+*.log
+
+# 测试截图和参考图片
+test_*.png
+test_*.jpg
+微博图片*.png
+*.png

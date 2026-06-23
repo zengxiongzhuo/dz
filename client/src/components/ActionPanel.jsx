@@ -1,0 +1,116 @@
+import React, { useState } from 'react';
+
+export default function ActionPanel({
+  validActions = ['fold', 'call', 'raise'],
+  callAmount = 0,
+  minRaise = 0,
+  maxRaise = 1000,
+  pot = 0,
+  onAction = () => {},
+  isMyTurn = false,
+}) {
+  const [showRaiseSlider, setShowRaiseSlider] = useState(false);
+  const [raiseAmount, setRaiseAmount] = useState(minRaise);
+
+  const canFold = validActions.includes('fold');
+  const canCall = validActions.includes('call');
+  const canCheck = validActions.includes('check');
+  const canRaise = validActions.includes('raise');
+
+  const handleFold = () => {
+    onAction({ type: 'fold' });
+  };
+
+  const handleCallOrCheck = () => {
+    if (canCheck) {
+      onAction({ type: 'check' });
+    } else {
+      onAction({ type: 'call', amount: callAmount });
+    }
+  };
+
+  const handleRaiseClick = () => {
+    setShowRaiseSlider(!showRaiseSlider);
+    setRaiseAmount(minRaise);
+  };
+
+  const handleConfirmRaise = () => {
+    onAction({ type: 'raise', amount: raiseAmount });
+    setShowRaiseSlider(false);
+  };
+
+  const handleQuickRaise = (multiplier) => {
+    const amount = Math.min(Math.floor(pot * multiplier), maxRaise);
+    setRaiseAmount(Math.max(amount, minRaise));
+  };
+
+  const handleAllIn = () => {
+    setRaiseAmount(maxRaise);
+  };
+
+  const callLabel = canCheck ? '过牌' : `跟注 ${callAmount.toLocaleString()}`;
+
+  return (
+    <div className={`action-panel ${!isMyTurn ? 'action-panel--disabled' : ''}`}>
+      {showRaiseSlider && isMyTurn && (
+        <div className="action-panel__raise-controls">
+          <div className="action-panel__raise-header">
+            <span className="action-panel__raise-label">加注到</span>
+            <span className="action-panel__raise-value">{raiseAmount.toLocaleString()}</span>
+          </div>
+          <input
+            type="range"
+            className="action-panel__slider"
+            min={minRaise}
+            max={maxRaise}
+            value={raiseAmount}
+            onChange={(e) => setRaiseAmount(Number(e.target.value))}
+          />
+          <div className="action-panel__quick-buttons">
+            <button className="action-panel__quick-btn" onClick={() => handleQuickRaise(0.5)}>
+              50%底池
+            </button>
+            <button className="action-panel__quick-btn" onClick={() => handleQuickRaise(0.75)}>
+              75%底池
+            </button>
+            <button className="action-panel__quick-btn" onClick={() => handleQuickRaise(1)}>
+              100%底池
+            </button>
+            <button className="action-panel__quick-btn action-panel__quick-btn--allin" onClick={handleAllIn}>
+              All In
+            </button>
+          </div>
+          <button className="action-panel__confirm-btn" onClick={handleConfirmRaise}>
+            确认加注 {raiseAmount.toLocaleString()}
+          </button>
+        </div>
+      )}
+
+      <div className="action-panel__buttons">
+        <button
+          className="action-panel__btn action-panel__btn--fold"
+          onClick={handleFold}
+          disabled={!isMyTurn || !canFold}
+        >
+          弃牌
+        </button>
+
+        <button
+          className="action-panel__btn action-panel__btn--call"
+          onClick={handleCallOrCheck}
+          disabled={!isMyTurn || (!canCall && !canCheck)}
+        >
+          {callLabel}
+        </button>
+
+        <button
+          className="action-panel__btn action-panel__btn--raise"
+          onClick={handleRaiseClick}
+          disabled={!isMyTurn || !canRaise}
+        >
+          加注
+        </button>
+      </div>
+    </div>
+  );
+}
