@@ -5,6 +5,7 @@ export default function ActionPanel({
   callAmount = 0,
   minRaise = 0,
   maxRaise = 1000,
+  playerChips = 0,
   pot = 0,
   onAction = () => {},
   isMyTurn = false,
@@ -16,6 +17,9 @@ export default function ActionPanel({
   const canCall = validActions.includes('call');
   const canCheck = validActions.includes('check');
   const canRaise = validActions.includes('raise');
+
+  // 判断是否是全押跟注（筹码不够匹配当前下注，需要全押）
+  const isAllInCall = canCall && callAmount > 0 && callAmount >= playerChips && playerChips > 0;
 
   const handleFold = () => {
     onAction({ type: 'fold' });
@@ -48,7 +52,7 @@ export default function ActionPanel({
     setRaiseAmount(maxRaise);
   };
 
-  const callLabel = canCheck ? '过牌' : `跟注 ${callAmount.toLocaleString()}`;
+  const callLabel = canCheck ? '过牌' : isAllInCall ? `全押 ${callAmount.toLocaleString()}` : `跟注 ${callAmount.toLocaleString()}`;
 
   return (
     <div className={`action-panel ${!isMyTurn ? 'action-panel--disabled' : ''}`}>

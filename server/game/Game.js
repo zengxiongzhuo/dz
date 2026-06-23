@@ -166,7 +166,8 @@ export default class Game {
 
       case 'call': {
         if (toCall <= 0) throw new Error('无需跟注');
-        const paid = player.placeBet(toCall);
+        const callAmount = Math.min(toCall, player.chips);
+        const paid = player.placeBet(callAmount);
         this.lastAction = { playerId, action: 'call', amount: paid };
         break;
       }
@@ -466,10 +467,9 @@ export default class Game {
 
     if (toCall > 0) {
       actions.push({ action: 'fold' });
-      if (player.chips > toCall) {
-        actions.push({ action: 'call', amount: toCall });
-      } else {
-        // 筹码不足 call 全 → allIn
+      if (player.chips > 0) {
+        // 筹码够跟注 → 正常跟注；不够 → 仍然可以 allIn 跟注
+        actions.push({ action: 'call', amount: Math.min(toCall, player.chips) });
       }
     } else {
       actions.push({ action: 'check' });
@@ -478,7 +478,7 @@ export default class Game {
     // raise：需要筹码 > toCall + minRaise
     const minRaiseTotal = this.currentBet + this.minRaise;
     const maxRaiseTotal = player.currentBet + player.chips;
-    if (player.chips > toCall && maxRaiseTotal > this.currentBet) {
+    if (player.chips > toCall && maxRaiseTotal >= minRaiseTotal) {
       const minR = Math.min(minRaiseTotal, maxRaiseTotal);
       actions.push({
         action: 'raise',
