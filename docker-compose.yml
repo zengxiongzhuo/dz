@@ -1,0 +1,10 @@
+services:
+  dz-poker:
+    build: .
+    container_name: dz-poker
+    restart: always
+    ports:
+      - "28091:3001"
+    environment:
+      - TZ=Asia/Shanghai
+      - PORT=3001
