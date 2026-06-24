@@ -247,6 +247,7 @@ export default function GameRoom({
         status: normalizeStatus(p.status),
         lastAction: p.id === lastActionPid ? lastActionLabel : null,
         connected: p.connected !== false,
+        borrowed: p.borrowed || 0,
       };
     });
   }, [sourcePlayers, gameState?.lastAction]);
@@ -402,6 +403,12 @@ export default function GameRoom({
       </div>
 
       <HandCards cards={myCards} />
+
+      {me?.borrowed > 0 && (
+        <div className="my-borrowed-info">
+          已借入: {me.borrowed.toLocaleString()}
+        </div>
+      )}
 
       {isMyTurn && actionDeadline && (
         <div className="action-timer" aria-live="polite">

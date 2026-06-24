@@ -13,6 +13,10 @@ export default class Player {
     this.borrowed = 0; // 累计借款
     this.connected = true;
     this.disconnectedAt = null;
+    // 战绩统计
+    this.handsPlayed = 0; // 参与手数
+    this.handsWon = 0;    // 赢得手数
+    this.totalWinnings = 0; // 总赢取筹码
   }
 
   // 下注（不超过现有筹码）；amount 为想下注的额度

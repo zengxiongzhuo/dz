@@ -3,11 +3,12 @@ import Player from './Player.js';
 import Game from './Game.js';
 
 export default class Room {
-  constructor(id, hostSocketId, initialChips) {
+  constructor(id, hostSocketId, initialChips, smallBlind) {
     this.id = id;
     this.hostId = hostSocketId;
     this.players = []; // Player 实例数组（按座位顺序）
     this.initialChips = initialChips;
+    this.smallBlind = smallBlind || Math.max(1, Math.floor(initialChips / 100));
     this.status = 'waiting'; // 'waiting' | 'playing' | 'ended'
     this.handCount = 0;
     this.game = null;
@@ -76,7 +77,7 @@ export default class Room {
     }
     this.status = 'playing';
     if (!this.game) {
-      this.game = new Game(this.players, this.initialChips);
+      this.game = new Game(this.players, this.initialChips, this.smallBlind);
     }
     this.game.startHand();
     this.handCount += 1;
@@ -105,7 +106,10 @@ export default class Room {
       initialChips: this.initialChips,
       finalChips: p.chips,
       borrowed: p.borrowed,
-      profit: p.chips - this.initialChips - p.borrowed
+      profit: p.chips - this.initialChips - p.borrowed,
+      handsPlayed: p.handsPlayed,
+      handsWon: p.handsWon,
+      totalWinnings: p.totalWinnings,
     }));
     this.status = 'ended';
     return results;
@@ -131,6 +135,8 @@ export default class Room {
       hostId: this.hostId,
       status: this.status,
       initialChips: this.initialChips,
+      smallBlind: this.smallBlind,
+      bigBlind: this.smallBlind * 2,
       handCount: this.handCount,
       maxPlayers: this.maxPlayers,
       players: this.players.map(p => ({

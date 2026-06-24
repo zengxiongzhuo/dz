@@ -3,7 +3,7 @@ import React from 'react';
 export default function PlayerSeat({ player, isCurrentTurn = false, isMe = false }) {
   if (!player) return null;
 
-  const { name, avatar, chips, currentBet, status, isDealer, lastAction } = player;
+  const { name, avatar, chips, currentBet, status, isDealer, lastAction, borrowed } = player;
   const isFolded = status === 'folded';
   const isAllIn = status === 'allin';
 
@@ -31,6 +31,11 @@ export default function PlayerSeat({ player, isCurrentTurn = false, isMe = false
         <div className="player-seat__chips">
           💰 {chips?.toLocaleString()}
         </div>
+        {borrowed > 0 && (
+          <div className="player-seat__borrowed">
+            借: {borrowed.toLocaleString()}
+          </div>
+        )}
       </div>
 
       {isFolded && (

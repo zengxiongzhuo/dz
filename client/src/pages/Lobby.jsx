@@ -23,6 +23,7 @@ export default function Lobby({
   const [tab, setTab] = useState('create'); // 'create' | 'join'
   const [chipChoice, setChipChoice] = useState(2000);
   const [customChips, setCustomChips] = useState('');
+  const [smallBlind, setSmallBlind] = useState('');
   const [joinRoomId, setJoinRoomId] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -120,10 +121,16 @@ export default function Lobby({
       setErrorMsg('初始筹码至少 100');
       return;
     }
+    const blindVal = smallBlind ? parseInt(smallBlind, 10) : 0;
+    if (smallBlind && (!Number.isFinite(blindVal) || blindVal < 1)) {
+      setErrorMsg('小盲注金额至少为 1');
+      return;
+    }
     const payload = {
       playerName: nickname,
       avatar: avatarId,
       initialChips: finalChips,
+      ...(blindVal > 0 ? { smallBlind: blindVal } : {}),
     };
     console.log('[lobby] emit create-room', payload);
     socket?.emit('create-room', payload);
@@ -203,6 +210,8 @@ export default function Lobby({
             setChipChoice={setChipChoice}
             customChips={customChips}
             setCustomChips={setCustomChips}
+            smallBlind={smallBlind}
+            setSmallBlind={setSmallBlind}
             joinRoomId={joinRoomId}
             setJoinRoomId={setJoinRoomId}
             onCreate={handleCreateRoom}
@@ -290,6 +299,8 @@ function ActionStage({
   setChipChoice,
   customChips,
   setCustomChips,
+  smallBlind,
+  setSmallBlind,
   joinRoomId,
   setJoinRoomId,
   onCreate,
@@ -357,6 +368,18 @@ function ActionStage({
                 style={{ marginTop: 12 }}
               />
             )}
+          </div>
+
+          <div className="field" style={{ marginTop: 14 }}>
+            <label className="field-label">小盲注 <span style={{ opacity: 0.5, fontSize: 11 }}>（留空自动 = 筹码/100）</span></label>
+            <input
+              type="number"
+              className="input"
+              placeholder={`默认 ${Math.max(1, Math.floor((chipChoice === 'custom' ? (parseInt(customChips, 10) || 0) : chipChoice) / 100))}`}
+              value={smallBlind}
+              min={1}
+              onChange={(e) => setSmallBlind(e.target.value)}
+            />
           </div>
 
           {errorMsg && <p className="error-text">{errorMsg}</p>}

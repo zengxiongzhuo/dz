@@ -474,6 +474,13 @@ body {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
+.player-seat__borrowed {
+  font-size: 8px;
+  color: var(--red);
+  font-weight: 600;
+  margin-top: 1px;
+}
+
 .player-seat__status-tag {
   font-size: 8px;
   padding: 1px 6px;
@@ -548,6 +555,14 @@ body {
 
 .hand-cards__card {
   transition: transform 0.2s ease;
+}
+
+.hand-cards__card--clickable {
+  cursor: pointer;
+}
+
+.hand-cards__card--clickable:active {
+  transform: scale(0.95);
 }
 
 .hand-cards__card:hover {
@@ -852,6 +867,23 @@ body {
   color: var(--red);
 }
 
+.game-result__stats {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+
+.game-result__stat {
+  white-space: nowrap;
+}
+
+.game-result__stat-divider {
+  opacity: 0.4;
+}
+
 .game-result__back-btn {
   display: block;
   width: 100%;
@@ -982,6 +1014,17 @@ body {
 }
 
 /* 借钱按钮 */
+
+/* 本人借钱数量显示 */
+.my-borrowed-info {
+  text-align: center;
+  font-size: 11px;
+  color: var(--red);
+  font-weight: 600;
+  padding: 2px 0;
+  flex-shrink: 0;
+}
+
 .borrow-chips-btn {
   position: fixed;
   left: 50%;

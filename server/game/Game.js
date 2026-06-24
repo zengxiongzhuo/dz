@@ -12,10 +12,10 @@ export const Phase = {
 };
 
 export default class Game {
-  constructor(players, initialChips) {
+  constructor(players, initialChips, smallBlind) {
     this.players = players; // 按座位顺序
     this.initialChips = initialChips;
-    this.smallBlind = Math.max(1, Math.floor(initialChips / 100));
+    this.smallBlind = smallBlind || Math.max(1, Math.floor(initialChips / 100));
     this.bigBlind = this.smallBlind * 2;
 
     this.deck = new Deck();
@@ -109,6 +109,11 @@ export default class Game {
         }
       }
     }
+
+    // 统计：参与手数
+    this.players.forEach(p => {
+      if (p.holeCards.length === 2) p.handsPlayed++;
+    });
 
     // 6. 小盲大盲下注
     const sbPlayer = this.players[this.smallBlindIndex];
@@ -418,7 +423,11 @@ export default class Game {
     // 派发筹码
     for (const [pid, amt] of Object.entries(distributions)) {
       const player = this.players.find(p => String(p.id) === String(pid));
-      if (player) player.chips += amt;
+      if (player) {
+        player.chips += amt;
+        player.handsWon++;
+        player.totalWinnings += amt;
+      }
     }
 
     this.pot = 0;
@@ -441,6 +450,8 @@ export default class Game {
     let total = 0;
     for (const pot of pots) total += pot.amount;
     winner.chips += total;
+    winner.handsWon++;
+    winner.totalWinnings += total;
     this.pot = 0;
     this.phase = Phase.SHOWDOWN;
     this.handResult = {

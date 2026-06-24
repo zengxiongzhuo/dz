@@ -106,13 +106,14 @@ export function registerHandlers(io) {
     console.log('Player connected:', socket.id);
 
     // 创建房间
-    socket.on('create-room', ({ playerName, avatar, initialChips }, callback) => {
+    socket.on('create-room', ({ playerName, avatar, initialChips, smallBlind }, callback) => {
       try {
         const chips = Math.max(100, parseInt(initialChips, 10) || 1000);
+        const blind = Math.max(1, parseInt(smallBlind, 10) || Math.floor(chips / 100));
         let roomId;
         do { roomId = Room.generateId(); } while (rooms.has(roomId));
 
-        const room = new Room(roomId, socket.id, chips);
+        const room = new Room(roomId, socket.id, chips, blind);
         room.addPlayer(socket.id, playerName || '玩家', avatar || '');
         rooms.set(roomId, room);
         playerRoomMap.set(socket.id, roomId);
@@ -199,7 +200,25 @@ export function registerHandlers(io) {
         if (!room) throw new Error('房间不存在');
         room.borrowChips(socket.id);
         broadcastRoom(roomId);
-        if (room.game) broadcastGameState(roomId);
+        if (room.game) {
+          broadcastGameState(roomId);
+          // 借钱后检查：如果游戏处于 WAITING 且现在有 >=2 人有筹码，自动开始下一手
+          if (room.game.phase === Phase.WAITING) {
+            const playable = room.players.filter(p => p.chips > 0).length;
+            if (playable >= 2) {
+              room.status = 'playing';
+              try {
+                room.game.startHand();
+                room.handCount += 1;
+                emitHoleCards(roomId);
+                broadcastGameState(roomId);
+                emitActionRequired(roomId);
+              } catch (e) {
+                io.to(roomId).emit('error-message', { message: e.message });
+              }
+            }
+          }
+        }
       } catch (err) {
         socket.emit('error-message', { message: err.message });
       }

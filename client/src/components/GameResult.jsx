@@ -14,10 +14,15 @@ export default function GameResult({ results = [], onBackToLobby = () => {} }) {
             const profit = player.profit || (player.finalChips - player.initialChips);
             const isPositive = profit > 0;
             const isNegative = profit < 0;
+            const winRate = player.handsPlayed > 0
+              ? Math.round((player.handsWon / player.handsPlayed) * 100)
+              : 0;
 
             return (
-              <div className="game-result__item" key={player.name || idx}>
-                <div className="game-result__rank">#{idx + 1}</div>
+              <div className="game-result__item" key={player.socketId || player.name || idx}>
+                <div className="game-result__rank">
+                  {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `#${idx + 1}`}
+                </div>
                 <div className="game-result__avatar">{player.avatar || '😀'}</div>
                 <div className="game-result__player-info">
                   <div className="game-result__name">{player.name}</div>
@@ -28,6 +33,19 @@ export default function GameResult({ results = [], onBackToLobby = () => {} }) {
                         (借: {player.borrowed.toLocaleString()})
                       </span>
                     )}
+                  </div>
+                  <div className="game-result__stats">
+                    <span className="game-result__stat">
+                      参与 {player.handsPlayed || 0} 手
+                    </span>
+                    <span className="game-result__stat-divider">·</span>
+                    <span className="game-result__stat">
+                      胜 {player.handsWon || 0} 手
+                    </span>
+                    <span className="game-result__stat-divider">·</span>
+                    <span className="game-result__stat">
+                      胜率 {winRate}%
+                    </span>
                   </div>
                 </div>
                 <div
