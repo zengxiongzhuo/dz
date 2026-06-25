@@ -122,8 +122,12 @@ export default function Lobby({
       return;
     }
     const blindVal = smallBlind ? parseInt(smallBlind, 10) : 0;
-    if (smallBlind && (!Number.isFinite(blindVal) || blindVal < 1)) {
-      setErrorMsg('小盲注金额至少为 1');
+    if (smallBlind && (!Number.isFinite(blindVal) || blindVal < 10)) {
+      setErrorMsg('小盲注金额至少为 10');
+      return;
+    }
+    if (smallBlind && blindVal % 10 !== 0) {
+      setErrorMsg('小盲注金额须为 10 的倍数');
       return;
     }
     const payload = {
@@ -375,9 +379,10 @@ function ActionStage({
             <input
               type="number"
               className="input"
-              placeholder={`默认 ${Math.max(1, Math.floor((chipChoice === 'custom' ? (parseInt(customChips, 10) || 0) : chipChoice) / 100))}`}
+              placeholder={`默认 ${Math.max(10, Math.floor((chipChoice === 'custom' ? (parseInt(customChips, 10) || 0) : chipChoice) / 100))}`}
               value={smallBlind}
-              min={1}
+              min={10}
+              step={10}
               onChange={(e) => setSmallBlind(e.target.value)}
             />
           </div>

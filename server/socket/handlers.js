@@ -109,7 +109,7 @@ export function registerHandlers(io) {
     socket.on('create-room', ({ playerName, avatar, initialChips, smallBlind }, callback) => {
       try {
         const chips = Math.max(100, parseInt(initialChips, 10) || 1000);
-        const blind = Math.max(1, parseInt(smallBlind, 10) || Math.floor(chips / 100));
+        const blind = Math.max(10, parseInt(smallBlind, 10) || Math.max(10, Math.floor(chips / 100)));
         let roomId;
         do { roomId = Room.generateId(); } while (rooms.has(roomId));
 
