@@ -1,5 +1,21 @@
 import React, { useState, useEffect } from 'react';
 
+// 向上取整到 10 的倍数
+function roundUp10(n) {
+  return Math.ceil(n / 10) * 10;
+}
+
+// 向下取整到 10 的倍数
+function roundDown10(n) {
+  return Math.floor(n / 10) * 10;
+}
+
+// 钳制到范围并取整到 10 的倍数
+function clampToRange(val, min, max) {
+  const rounded = roundUp10(val);
+  return Math.max(roundUp10(min), Math.min(rounded, roundDown10(max)));
+}
+
 export default function ActionPanel({
   validActions = ['fold', 'call', 'raise'],
   callAmount = 0,
@@ -12,11 +28,11 @@ export default function ActionPanel({
   isMyTurn = false,
 }) {
   const [showRaiseSlider, setShowRaiseSlider] = useState(false);
-  const [raiseAmount, setRaiseAmount] = useState(minRaise);
+  const [raiseAmount, setRaiseAmount] = useState(() => roundUp10(minRaise));
 
   // 当轮次切换或 minRaise 变化时，重置加注金额
   useEffect(() => {
-    setRaiseAmount(minRaise);
+    setRaiseAmount(roundUp10(minRaise));
   }, [minRaise, isMyTurn]);
 
   const canFold = validActions.includes('fold');
@@ -41,26 +57,30 @@ export default function ActionPanel({
 
   const handleRaiseClick = () => {
     setShowRaiseSlider(!showRaiseSlider);
-    setRaiseAmount(minRaise);
+    setRaiseAmount(roundUp10(minRaise));
   };
 
   const handleConfirmRaise = () => {
-    const final = Math.max(minRaise, Math.min(raiseAmount, maxRaise));
+    const final = clampToRange(raiseAmount, minRaise, maxRaise);
     onAction({ type: 'raise', amount: final });
     setShowRaiseSlider(false);
   };
 
-  // 快速加注：基于当前下注 + 底池百分比
-  // "50%底池" = 加注到 currentBet + pot * 0.5
+  // 快速加注：基于当前下注 + 底池百分比，结果取整到 10 的倍数
   const handleQuickRaise = (multiplier) => {
     const raiseDelta = Math.floor(pot * multiplier);
     const target = currentBet + raiseDelta;
-    const clamped = Math.max(minRaise, Math.min(target, maxRaise));
+    const clamped = clampToRange(target, minRaise, maxRaise);
     setRaiseAmount(clamped);
   };
 
   const handleAllIn = () => {
-    setRaiseAmount(maxRaise);
+    setRaiseAmount(roundDown10(maxRaise));
+  };
+
+  const handleSliderChange = (e) => {
+    // 滑块 step=10，直接取值
+    setRaiseAmount(Number(e.target.value));
   };
 
   const callLabel = canCheck ? '过牌' : isAllInCall ? `全押 ${callAmount.toLocaleString()}` : `跟注 ${callAmount.toLocaleString()}`;
@@ -76,10 +96,11 @@ export default function ActionPanel({
           <input
             type="range"
             className="action-panel__slider"
-            min={minRaise}
-            max={maxRaise}
+            min={roundUp10(minRaise)}
+            max={roundDown10(maxRaise)}
+            step={10}
             value={raiseAmount}
-            onChange={(e) => setRaiseAmount(Number(e.target.value))}
+            onChange={handleSliderChange}
           />
           <div className="action-panel__quick-buttons">
             <button className="action-panel__quick-btn" onClick={() => handleQuickRaise(0.5)}>
