@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function ActionPanel({
   validActions = ['fold', 'call', 'raise'],
@@ -7,11 +7,17 @@ export default function ActionPanel({
   maxRaise = 1000,
   playerChips = 0,
   pot = 0,
+  currentBet = 0,
   onAction = () => {},
   isMyTurn = false,
 }) {
   const [showRaiseSlider, setShowRaiseSlider] = useState(false);
   const [raiseAmount, setRaiseAmount] = useState(minRaise);
+
+  // 当轮次切换或 minRaise 变化时，重置加注金额
+  useEffect(() => {
+    setRaiseAmount(minRaise);
+  }, [minRaise, isMyTurn]);
 
   const canFold = validActions.includes('fold');
   const canCall = validActions.includes('call');
@@ -39,13 +45,18 @@ export default function ActionPanel({
   };
 
   const handleConfirmRaise = () => {
-    onAction({ type: 'raise', amount: raiseAmount });
+    const final = Math.max(minRaise, Math.min(raiseAmount, maxRaise));
+    onAction({ type: 'raise', amount: final });
     setShowRaiseSlider(false);
   };
 
+  // 快速加注：基于当前下注 + 底池百分比
+  // "50%底池" = 加注到 currentBet + pot * 0.5
   const handleQuickRaise = (multiplier) => {
-    const amount = Math.min(Math.floor(pot * multiplier), maxRaise);
-    setRaiseAmount(Math.max(amount, minRaise));
+    const raiseDelta = Math.floor(pot * multiplier);
+    const target = currentBet + raiseDelta;
+    const clamped = Math.max(minRaise, Math.min(target, maxRaise));
+    setRaiseAmount(clamped);
   };
 
   const handleAllIn = () => {

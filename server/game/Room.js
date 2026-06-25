@@ -122,9 +122,8 @@ export default class Room {
     if (player.chips > 0) throw new Error('仍有筹码，无法借钱');
     player.chips += this.initialChips;
     player.borrowed += this.initialChips;
-    if (player.status === 'waiting') {
-      // 下一手开始时会被设为 active
-    }
+    // 借钱后立即设为 active，确保下一手能参与
+    player.status = 'active';
     return player;
   }
 

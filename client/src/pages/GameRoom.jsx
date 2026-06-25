@@ -428,6 +428,7 @@ export default function GameRoom({
         maxRaise={maxRaise}
         playerChips={me?.chips || 0}
         pot={totalPot}
+        currentBet={gameState?.currentBet || 0}
         onAction={sendAction}
         isMyTurn={isMyTurn}
       />
